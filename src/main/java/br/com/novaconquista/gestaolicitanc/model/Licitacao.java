@@ -38,4 +38,7 @@ public class Licitacao {
 
     @Column(name = "participar")
     private Boolean participar;
+
+    @OneToMany(mappedBy = "licitacao", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<ItemLicitacao> itens = new java.util.ArrayList<>();
 }
