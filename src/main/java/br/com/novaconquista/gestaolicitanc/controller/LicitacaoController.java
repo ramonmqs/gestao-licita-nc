@@ -30,4 +30,14 @@ public class LicitacaoController {
         List<LicitacaoResponseDTO> lista = service.listarFilaCaptacao();
         return ResponseEntity.ok(lista);
     }
+
+    // Rota para o Ramon enviar o PDF (Ação do seu painel)
+    @PatchMapping(value = "/{id}/upload-pdf", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<LicitacaoResponseDTO> enviarPdf(
+            @PathVariable Long id,
+            @RequestParam("arquivo") org.springframework.web.multipart.MultipartFile arquivo) {
+
+        LicitacaoResponseDTO licitacaoAtualizada = service.anexarPdf(id, arquivo);
+        return ResponseEntity.ok(licitacaoAtualizada);
+    }
 }
