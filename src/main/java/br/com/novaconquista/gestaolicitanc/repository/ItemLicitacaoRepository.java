@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface ItemLicitacaoRepository extends JpaRepository<ItemLicitacao, Long> {
 
-    // Metodo para buscar todos os itens de um edital específico
-    List<ItemLicitacao> findByLicitacaoIdOrderByNumeroItemAsc(Long licitacaoId);
+    // Alinhado para usar 'numero' em vez de 'numeroItem'
+    List<ItemLicitacao> findByLicitacaoIdOrderByNumeroAsc(Long licitacaoId);
 }

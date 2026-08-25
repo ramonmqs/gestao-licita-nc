@@ -12,8 +12,6 @@ import java.util.UUID;
 @Service
 public class ArmazenamentoService {
 
-    // Nota de Arquitetura: Em produção, o S3Client será injetado com as chaves reais.
-    // Aqui estamos desenhando a lógica de negócio do upload.
 
     public String fazerUploadPdf(MultipartFile arquivo) {
         try {
