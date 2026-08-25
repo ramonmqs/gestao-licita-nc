@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/licitacoes")
-@CrossOrigin(origins = "*") // Permite que o seu Vercel e o Localhost conversem com o Java
+@CrossOrigin(origins = "*", allowedHeaders = "*") // Liberado geral para testes
 public class LicitacaoController {
 
     @Autowired

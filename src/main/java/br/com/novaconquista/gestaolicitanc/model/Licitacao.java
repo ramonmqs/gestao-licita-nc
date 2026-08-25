@@ -2,8 +2,6 @@ package br.com.novaconquista.gestaolicitanc.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "licitacoes")
@@ -15,43 +13,41 @@ public class Licitacao {
 
     private String orgao;
 
-    private String numero;
+    // Mapeamos a coluna cidade para refletir o banco antigo caso ela seja obrigatória lá
+    @Column(name = "cidade")
+    private String cidade;
 
+    private String numero;
     private String dataPregao;
 
     @Column(columnDefinition = "TEXT")
     private String objeto;
 
-    // Status padrão sempre começa aguardando o seu PDF
     private String status = "pendente_pdf";
-
-    // Data e Hora que você vai configurar para o retorno
     private LocalDateTime dataRetorno;
-
-    // Controle da bolinha verde do Marivaldo
     private boolean temPdf = false;
-
-    // Preparando o terreno para a AWS S3
     private String urlPdf;
 
-    // Um pregão tem vários itens. Se apagar o pregão, apaga os itens dele.
-    @OneToMany(mappedBy = "licitacao", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ItemLicitacao> itens = new ArrayList<>();
-
-    // Construtor vazio (obrigatório do JPA)
     public Licitacao() {}
 
-    // ==========================================
-    // GETTERS E SETTERS
-    // ==========================================
+    // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
     public String getOrgao() { return orgao; }
-    public void setOrgao(String orgao) { this.orgao = orgao; }
+    public void setOrgao(String orgao) {
+        this.orgao = orgao;
+        this.cidade = orgao; // Garante que a coluna antiga 'cidade' receba o mesmo valor do órgão
+    }
+
+    public String getCidade() { return cidade; }
+    public void setCidade(String cidade) { this.cidade = cidade; }
 
     public String getNumero() { return numero; }
     public void setNumero(String numero) { this.numero = numero; }
+
+    public String getDataPregao() { return dataPregao; }
+    public void setDataPregao(String dataPregao) { this.dataPregao = dataPregao; }
 
     public String getObjeto() { return objeto; }
     public void setObjeto(String objeto) { this.objeto = objeto; }
@@ -67,10 +63,4 @@ public class Licitacao {
 
     public String getUrlPdf() { return urlPdf; }
     public void setUrlPdf(String urlPdf) { this.urlPdf = urlPdf; }
-
-    public String getDataPregao() { return dataPregao; }
-    public void setDataPregao(String dataPregao) { this.dataPregao = dataPregao; }
-
-    public List<ItemLicitacao> getItens() { return itens; }
-    public void setItens(List<ItemLicitacao> itens) { this.itens = itens; }
 }
