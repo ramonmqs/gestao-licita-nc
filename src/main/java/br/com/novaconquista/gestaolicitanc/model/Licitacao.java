@@ -13,11 +13,13 @@ public class Licitacao {
 
     private String orgao;
 
-    // Mapeamos a coluna cidade para refletir o banco antigo caso ela seja obrigatória lá
     @Column(name = "cidade")
     private String cidade;
 
     private String numero;
+
+    // Mapeia dataPregao diretamente para a coluna obrigatória antiga data_certame
+    @Column(name = "data_certame")
     private String dataPregao;
 
     @Column(columnDefinition = "TEXT")
@@ -37,7 +39,7 @@ public class Licitacao {
     public String getOrgao() { return orgao; }
     public void setOrgao(String orgao) {
         this.orgao = orgao;
-        this.cidade = orgao; // Garante que a coluna antiga 'cidade' receba o mesmo valor do órgão
+        this.cidade = orgao;
     }
 
     public String getCidade() { return cidade; }
