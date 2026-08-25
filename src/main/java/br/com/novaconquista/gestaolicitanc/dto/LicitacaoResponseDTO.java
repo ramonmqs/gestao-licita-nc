@@ -3,30 +3,36 @@ package br.com.novaconquista.gestaolicitanc.dto;
 import br.com.novaconquista.gestaolicitanc.model.Licitacao;
 import java.time.LocalDateTime;
 
-public record LicitacaoResponseDTO(
-        Long id,
-        String numeroPregao,
-        String cidade,
-        LocalDateTime dataCertame,
-        String modalidade,
-        String objeto,
-        String portalLicitacao,
-        String statusInterno,
-        String urlEditalPdf,
-        Boolean participar
-) {
+public class LicitacaoResponseDTO {
+    private Long id;
+    private String orgao;
+    private String numero;
+    private String dataPregao;
+    private String objeto;
+    private String status;
+    private LocalDateTime dataRetorno;
+    private boolean temPdf;
+    private String urlPdf;
+
     public LicitacaoResponseDTO(Licitacao licitacao) {
-        this(
-                licitacao.getId(),
-                licitacao.getNumeroPregao(),
-                licitacao.getCidade(),
-                licitacao.getDataCertame(),
-                licitacao.getModalidade(),
-                licitacao.getObjeto(),
-                licitacao.getPortalLicitacao(),
-                licitacao.getStatusInterno(),
-                licitacao.getUrlEditalPdf(),
-                licitacao.getParticipar()
-        );
+        this.id = licitacao.getId();
+        this.orgao = licitacao.getOrgao();
+        this.numero = licitacao.getNumero();
+        this.dataPregao = licitacao.getDataPregao();
+        this.objeto = licitacao.getObjeto();
+        this.status = licitacao.getStatus();
+        this.dataRetorno = licitacao.getDataRetorno();
+        this.temPdf = licitacao.isTemPdf();
+        this.urlPdf = licitacao.getUrlPdf();
     }
+
+    public Long getId() { return id; }
+    public String getOrgao() { return orgao; }
+    public String getNumero() { return numero; }
+    public String getDataPregao() { return dataPregao; }
+    public String getObjeto() { return objeto; }
+    public String getStatus() { return status; }
+    public LocalDateTime getDataRetorno() { return dataRetorno; }
+    public boolean isTemPdf() { return temPdf; }
+    public String getUrlPdf() { return urlPdf; }
 }

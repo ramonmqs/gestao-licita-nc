@@ -4,6 +4,6 @@ import java.math.BigDecimal;
 
 public record ItemLicitacaoRequestDTO(
         Integer numeroItem,
-        String descricaoExataEdital, // Obriga a receber a descrição sem resumos
+        String descricaoExataEdital,
         BigDecimal valorOriginal
 ) {}

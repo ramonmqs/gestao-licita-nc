@@ -1,22 +1,22 @@
 package br.com.novaconquista.gestaolicitanc.dto;
 
 import br.com.novaconquista.gestaolicitanc.model.ItemLicitacao;
-import java.math.BigDecimal;
 
-public record ItemLicitacaoResponseDTO(
-        Long id,
-        Integer numeroItem,
-        String descricaoExataEdital,
-        BigDecimal valorOriginal,
-        BigDecimal valorLimite // O sistema devolverá o teto já calculado: original + 40%
-) {
+public class ItemLicitacaoResponseDTO {
+    private Long id;
+    private Integer numero;
+    private String descricao;
+    private Integer quantidade;
+
     public ItemLicitacaoResponseDTO(ItemLicitacao item) {
-        this(
-                item.getId(),
-                item.getNumeroItem(),
-                item.getDescricaoExataEdital(),
-                item.getValorOriginal(),
-                item.getValorLimite()
-        );
+        this.id = item.getId();
+        this.numero = item.getNumero();
+        this.descricao = item.getDescricao();
+        this.quantidade = item.getQuantidade();
     }
+
+    public Long getId() { return id; }
+    public Integer getNumero() { return numero; }
+    public String getDescricao() { return descricao; }
+    public Integer getQuantidade() { return quantidade; }
 }
