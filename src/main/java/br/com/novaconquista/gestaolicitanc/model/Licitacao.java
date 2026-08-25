@@ -17,6 +17,8 @@ public class Licitacao {
 
     private String numero;
 
+    private String dataPregao;
+
     @Column(columnDefinition = "TEXT")
     private String objeto;
 
@@ -65,6 +67,9 @@ public class Licitacao {
 
     public String getUrlPdf() { return urlPdf; }
     public void setUrlPdf(String urlPdf) { this.urlPdf = urlPdf; }
+
+    public String getDataPregao() { return dataPregao; }
+    public void setDataPregao(String dataPregao) { this.dataPregao = dataPregao; }
 
     public List<ItemLicitacao> getItens() { return itens; }
     public void setItens(List<ItemLicitacao> itens) { this.itens = itens; }
