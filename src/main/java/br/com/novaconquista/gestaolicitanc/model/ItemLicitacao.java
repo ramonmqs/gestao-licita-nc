@@ -1,46 +1,40 @@
 package br.com.novaconquista.gestaolicitanc.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.math.BigDecimal;
 
 @Entity
 @Table(name = "itens_licitacao")
-@Getter
-@Setter
 public class ItemLicitacao {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Integer numeroItem;
+    private Integer numero;
 
-    // Regra de Negócio: Deve ser armazenado exatamente como no edital, sem resumos.
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String descricaoExataEdital;
+    @Column(columnDefinition = "TEXT")
+    private String descricao;
 
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal valorOriginal;
+    private Integer quantidade;
 
-    // Calculado automaticamente: valorOriginal + 40%
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal valorLimite;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "licitacao_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "licitacao_id")
     private Licitacao licitacao;
 
-    // Método que garante a trava matemática dos 40% no momento em que o item é instanciado
-    @PrePersist
-    @PreUpdate
-    public void calcularValorLimite() {
-        if (this.valorOriginal != null) {
-            BigDecimal multiplicador = new BigDecimal("1.40");
-            this.valorLimite = this.valorOriginal.multiply(multiplicador);
-        }
-    }
+    public ItemLicitacao() {}
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Integer getNumero() { return numero; }
+    public void setNumero(Integer numero) { this.numero = numero; }
+
+    public String getDescricao() { return descricao; }
+    public void setDescricao(String descricao) { this.descricao = descricao; }
+
+    public Integer getQuantidade() { return quantidade; }
+    public void setQuantidade(Integer quantidade) { this.quantidade = quantidade; }
+
+    public Licitacao getLicitacao() { return licitacao; }
+    public void setLicitacao(Licitacao licitacao) { this.licitacao = licitacao; }
 }

@@ -1,76 +1,58 @@
 package br.com.novaconquista.gestaolicitanc.controller;
 
 import br.com.novaconquista.gestaolicitanc.model.Licitacao;
-import br.com.novaconquista.gestaolicitanc.service.LicitacaoService;
-import br.com.novaconquista.gestaolicitanc.service.ArmazenamentoService;
-import br.com.novaconquista.gestaolicitanc.service.ItemLicitacaoService;
-import br.com.novaconquista.gestaolicitanc.dto.ItemLicitacaoRequestDTO;
-import br.com.novaconquista.gestaolicitanc.dto.ItemLicitacaoResponseDTO;
-import lombok.RequiredArgsConstructor;
+import br.com.novaconquista.gestaolicitanc.repository.LicitacaoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/licitacoes")
-@CrossOrigin(origins = "*")
-@RequiredArgsConstructor
+@CrossOrigin(origins = "*") // Permite que o seu Vercel e o Localhost conversem com o Java
 public class LicitacaoController {
 
-    private final LicitacaoService service;
-    private final ItemLicitacaoService itemService;
-    private final ArmazenamentoService armazenamentoService;
+    @Autowired
+    private LicitacaoRepository licitacaoRepository;
 
-    @PostMapping
-    public ResponseEntity<Licitacao> criar(@RequestBody Licitacao licitacao) {
-        return ResponseEntity.status(201).body(service.salvar(licitacao));
-    }
-
+    // 1. CARREGAR AS TABELAS: Retorna todos os pregões cadastrados
     @GetMapping
-    public ResponseEntity<List<Licitacao>> listar() {
-        return ResponseEntity.ok(service.listarTodos());
+    public List<Licitacao> listarTodas() {
+        return licitacaoRepository.findAll();
     }
 
-    @PatchMapping("/{id}/upload-pdf")
-    public ResponseEntity<Licitacao> fazerUploadPdf(@PathVariable Long id, @RequestParam("arquivo") MultipartFile arquivo) {
-        String urlPdf = armazenamentoService.fazerUploadPdf(arquivo);
-        Licitacao licitacaoAtualizada = service.atualizarStatusPdf(id, urlPdf);
-        return ResponseEntity.ok(licitacaoAtualizada);
+    // 2. FILA DE CAPTAÇÃO: Marivaldo envia os dados básicos de um novo pregão
+    @PostMapping
+    public ResponseEntity<Licitacao> criarLicitacao(@RequestBody Licitacao novaLicitacao) {
+        // Trava de segurança: Todo pregão novo entra aguardando o seu PDF
+        novaLicitacao.setStatus("pendente_pdf");
+        novaLicitacao.setTemPdf(false);
+
+        Licitacao salva = licitacaoRepository.save(novaLicitacao);
+        return ResponseEntity.ok(salva);
     }
 
-    @PostMapping("/{id}/itens")
-    public ResponseEntity<ItemLicitacaoResponseDTO> adicionarItem(
+    // 3. SUA CENTRAL DE COMANDO: Você altera o Status e a Data de Retorno
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Licitacao> atualizarStatus(
             @PathVariable Long id,
-            @RequestBody ItemLicitacaoRequestDTO dto) {
-        var itemCriado = itemService.adicionarItem(id, dto);
-        return ResponseEntity.status(201).body(itemCriado);
-    }
+            @RequestBody Licitacao dadosAtualizados) {
 
-    @GetMapping("/{id}/itens")
-    public ResponseEntity<List<ItemLicitacaoResponseDTO>> listarItens(@PathVariable Long id) {
-        var itens = itemService.listarItensDaLicitacao(id);
-        return ResponseEntity.ok(itens);
-    }
+        Optional<Licitacao> licitacaoExistente = licitacaoRepository.findById(id);
 
-    @DeleteMapping("/itens/{idItem}")
-    public ResponseEntity<Void> excluirItem(@PathVariable Long idItem) {
-        itemService.excluirItem(idItem);
-        return ResponseEntity.noContent().build();
-    }
+        if (licitacaoExistente.isPresent()) {
+            Licitacao licitacao = licitacaoExistente.get();
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Licitacao> atualizarLicitacao(
-            @PathVariable Long id,
-            @RequestBody Licitacao licitacaoAtualizada) {
-        Licitacao licitacao = service.atualizarLicitacao(id, licitacaoAtualizada);
-        return ResponseEntity.ok(licitacao);
-    }
+            // Atualiza apenas o que você modificou na sua tela
+            licitacao.setStatus(dadosAtualizados.getStatus());
+            licitacao.setDataRetorno(dadosAtualizados.getDataRetorno());
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluirLicitacao(@PathVariable Long id) {
-        service.excluirLicitacao(id);
-        return ResponseEntity.noContent().build();
+            Licitacao atualizada = licitacaoRepository.save(licitacao);
+            return ResponseEntity.ok(atualizada);
+        }
+
+        return ResponseEntity.notFound().build();
     }
 }

@@ -1,44 +1,71 @@
 package br.com.novaconquista.gestaolicitanc.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-@Data //
-@Entity //
+@Entity
 @Table(name = "licitacoes")
 public class Licitacao {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "numero_pregao", nullable = false)
-    private String numeroPregao;
 
-    @Column(nullable = false)
-    private String cidade;
+    private String orgao;
 
-    @Column(name = "data_certame", nullable = false)
-    private LocalDateTime dataCertame;
+    private String numero;
 
-    @Column(nullable = false)
-    private String modalidade;
-
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String objeto;
 
-    @Column(name = "portal_licitacao")
-    private String portalLicitacao;
+    // Status padrão sempre começa aguardando o seu PDF
+    private String status = "pendente_pdf";
 
-    @Column(name = "status_interno")
-    private String statusInterno = "AGUARDANDO_PDF";
+    // Data e Hora que você vai configurar para o retorno
+    private LocalDateTime dataRetorno;
 
-    @Column(name = "url_edital_pdf")
-    private String urlEditalPdf;
+    // Controle da bolinha verde do Marivaldo
+    private boolean temPdf = false;
 
-    @Column(name = "participar")
-    private Boolean participar;
+    // Preparando o terreno para a AWS S3
+    private String urlPdf;
 
+    // Um pregão tem vários itens. Se apagar o pregão, apaga os itens dele.
     @OneToMany(mappedBy = "licitacao", cascade = CascadeType.ALL, orphanRemoval = true)
-    private java.util.List<ItemLicitacao> itens = new java.util.ArrayList<>();
+    private List<ItemLicitacao> itens = new ArrayList<>();
+
+    // Construtor vazio (obrigatório do JPA)
+    public Licitacao() {}
+
+    // ==========================================
+    // GETTERS E SETTERS
+    // ==========================================
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getOrgao() { return orgao; }
+    public void setOrgao(String orgao) { this.orgao = orgao; }
+
+    public String getNumero() { return numero; }
+    public void setNumero(String numero) { this.numero = numero; }
+
+    public String getObjeto() { return objeto; }
+    public void setObjeto(String objeto) { this.objeto = objeto; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public LocalDateTime getDataRetorno() { return dataRetorno; }
+    public void setDataRetorno(LocalDateTime dataRetorno) { this.dataRetorno = dataRetorno; }
+
+    public boolean isTemPdf() { return temPdf; }
+    public void setTemPdf(boolean temPdf) { this.temPdf = temPdf; }
+
+    public String getUrlPdf() { return urlPdf; }
+    public void setUrlPdf(String urlPdf) { this.urlPdf = urlPdf; }
+
+    public List<ItemLicitacao> getItens() { return itens; }
+    public void setItens(List<ItemLicitacao> itens) { this.itens = itens; }
 }
