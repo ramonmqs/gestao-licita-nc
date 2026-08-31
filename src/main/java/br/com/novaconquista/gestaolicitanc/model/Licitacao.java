@@ -12,19 +12,9 @@ public class Licitacao {
     private Long id;
 
     private String orgao;
-
-    @Column(name = "cidade")
-    private String cidade;
-
     private String numero;
-
-    @Column(name = "data_certame")
     private String dataPregao;
-
-    // ADICIONADOS: Modalidade e Portal
     private String modalidade;
-
-    @Column(name = "portal_licitacao")
     private String portalLicitacao;
 
     @Column(columnDefinition = "TEXT")
@@ -42,13 +32,7 @@ public class Licitacao {
     public void setId(Long id) { this.id = id; }
 
     public String getOrgao() { return orgao; }
-    public void setOrgao(String orgao) {
-        this.orgao = orgao;
-        this.cidade = orgao;
-    }
-
-    public String getCidade() { return cidade; }
-    public void setCidade(String cidade) { this.cidade = cidade; }
+    public void setOrgao(String orgao) { this.orgao = orgao; }
 
     public String getNumero() { return numero; }
     public void setNumero(String numero) { this.numero = numero; }
