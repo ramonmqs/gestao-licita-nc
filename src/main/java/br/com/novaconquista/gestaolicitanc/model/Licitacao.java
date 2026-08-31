@@ -18,9 +18,14 @@ public class Licitacao {
 
     private String numero;
 
-    // Mapeia dataPregao diretamente para a coluna obrigatória antiga data_certame
     @Column(name = "data_certame")
     private String dataPregao;
+
+    // ADICIONADOS: Modalidade e Portal
+    private String modalidade;
+
+    @Column(name = "portal_licitacao")
+    private String portalLicitacao;
 
     @Column(columnDefinition = "TEXT")
     private String objeto;
@@ -50,6 +55,12 @@ public class Licitacao {
 
     public String getDataPregao() { return dataPregao; }
     public void setDataPregao(String dataPregao) { this.dataPregao = dataPregao; }
+
+    public String getModalidade() { return modalidade; }
+    public void setModalidade(String modalidade) { this.modalidade = modalidade; }
+
+    public String getPortalLicitacao() { return portalLicitacao; }
+    public void setPortalLicitacao(String portalLicitacao) { this.portalLicitacao = portalLicitacao; }
 
     public String getObjeto() { return objeto; }
     public void setObjeto(String objeto) { this.objeto = objeto; }
