@@ -21,7 +21,13 @@ public class Licitacao {
     private String objeto;
 
     private String status = "pendente_pdf";
+
+    // Novos campos para o acompanhamento de Ramon
     private LocalDateTime dataRetorno;
+
+    @Column(columnDefinition = "TEXT")
+    private String diligencia;
+
     private boolean temPdf = false;
     private String urlPdf;
 
@@ -54,6 +60,9 @@ public class Licitacao {
 
     public LocalDateTime getDataRetorno() { return dataRetorno; }
     public void setDataRetorno(LocalDateTime dataRetorno) { this.dataRetorno = dataRetorno; }
+
+    public String getDiligencia() { return diligencia; }
+    public void setDiligencia(String diligencia) { this.diligencia = diligencia; }
 
     public boolean isTemPdf() { return temPdf; }
     public void setTemPdf(boolean temPdf) { this.temPdf = temPdf; }
