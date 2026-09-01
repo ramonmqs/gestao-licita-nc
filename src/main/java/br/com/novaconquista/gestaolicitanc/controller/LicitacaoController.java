@@ -11,7 +11,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/licitacoes")
-@CrossOrigin(origins = "*", allowedHeaders = "*") // Liberado geral para testes
 public class LicitacaoController {
 
     @Autowired
@@ -53,6 +52,16 @@ public class LicitacaoController {
             return ResponseEntity.ok(atualizada);
         }
 
+        return ResponseEntity.notFound().build();
+    }
+
+    // 4. EXCLUSÃO: Remove um edital incorreto ou cancelado
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletarLicitacao(@PathVariable Long id) {
+        if (licitacaoRepository.existsById(id)) {
+            licitacaoRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
         return ResponseEntity.notFound().build();
     }
 }
