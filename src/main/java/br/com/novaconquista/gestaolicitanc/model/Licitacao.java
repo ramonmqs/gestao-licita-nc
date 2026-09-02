@@ -31,6 +31,10 @@ public class Licitacao {
     private boolean temPdf = false;
     private String urlPdf;
 
+    @Lob
+    private byte[] arquivoPdf;
+    private String nomeArquivoPdf;
+
     public Licitacao() {}
 
     // Getters e Setters
@@ -69,4 +73,10 @@ public class Licitacao {
 
     public String getUrlPdf() { return urlPdf; }
     public void setUrlPdf(String urlPdf) { this.urlPdf = urlPdf; }
+
+    public byte[] getArquivoPdf() { return arquivoPdf; }
+    public void setArquivoPdf(byte[] arquivoPdf) { this.arquivoPdf = arquivoPdf; }
+
+    public String getNomeArquivoPdf() { return nomeArquivoPdf; }
+    public void setNomeArquivoPdf(String nomeArquivoPdf) { this.nomeArquivoPdf = nomeArquivoPdf; }
 }

@@ -5,6 +5,9 @@ import br.com.novaconquista.gestaolicitanc.repository.LicitacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +64,39 @@ public class LicitacaoController {
         if (licitacaoRepository.existsById(id)) {
             licitacaoRepository.deleteById(id);
             return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    // ROTA PARA RAMON FAZER O UPLOAD
+    @PostMapping("/{id}/upload")
+    public ResponseEntity<Void> uploadPdf(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        Optional<Licitacao> licitacaoExistente = licitacaoRepository.findById(id);
+        if (licitacaoExistente.isPresent()) {
+            try {
+                Licitacao licitacao = licitacaoExistente.get();
+                licitacao.setArquivoPdf(file.getBytes());
+                licitacao.setNomeArquivoPdf(file.getOriginalFilename());
+                licitacao.setTemPdf(true);
+                licitacaoRepository.save(licitacao);
+                return ResponseEntity.ok().build();
+            } catch (Exception e) {
+                return ResponseEntity.internalServerError().build();
+            }
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    // ROTA PARA MARIVALDO (E RAMON) BAIXAREM O ARQUIVO
+    @GetMapping("/{id}/download")
+    public ResponseEntity<byte[]> downloadPdf(@PathVariable Long id) {
+        Optional<Licitacao> licitacaoExistente = licitacaoRepository.findById(id);
+        if (licitacaoExistente.isPresent() && licitacaoExistente.get().getArquivoPdf() != null) {
+            Licitacao licitacao = licitacaoExistente.get();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + licitacao.getNomeArquivoPdf() + "\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(licitacao.getArquivoPdf());
         }
         return ResponseEntity.notFound().build();
     }
