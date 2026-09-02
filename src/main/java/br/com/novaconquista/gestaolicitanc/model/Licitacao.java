@@ -2,6 +2,8 @@ package br.com.novaconquista.gestaolicitanc.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "licitacoes")
@@ -28,12 +30,13 @@ public class Licitacao {
     @Column(columnDefinition = "TEXT")
     private String diligencia;
 
-    private boolean temPdf = false;
     private String urlPdf;
 
-    @Lob
-    private byte[] arquivoPdf;
-    private String nomeArquivoPdf;
+    @OneToMany(mappedBy = "licitacao", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ArquivoLicitacao> arquivos = new ArrayList<>();
+
+    public List<ArquivoLicitacao> getArquivos() { return arquivos; }
+    public void setArquivos(List<ArquivoLicitacao> arquivos) { this.arquivos = arquivos; }
 
     public Licitacao() {}
 
@@ -68,15 +71,7 @@ public class Licitacao {
     public String getDiligencia() { return diligencia; }
     public void setDiligencia(String diligencia) { this.diligencia = diligencia; }
 
-    public boolean isTemPdf() { return temPdf; }
-    public void setTemPdf(boolean temPdf) { this.temPdf = temPdf; }
-
     public String getUrlPdf() { return urlPdf; }
     public void setUrlPdf(String urlPdf) { this.urlPdf = urlPdf; }
 
-    public byte[] getArquivoPdf() { return arquivoPdf; }
-    public void setArquivoPdf(byte[] arquivoPdf) { this.arquivoPdf = arquivoPdf; }
-
-    public String getNomeArquivoPdf() { return nomeArquivoPdf; }
-    public void setNomeArquivoPdf(String nomeArquivoPdf) { this.nomeArquivoPdf = nomeArquivoPdf; }
 }

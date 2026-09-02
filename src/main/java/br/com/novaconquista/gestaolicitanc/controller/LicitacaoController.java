@@ -1,13 +1,16 @@
 package br.com.novaconquista.gestaolicitanc.controller;
 
+import br.com.novaconquista.gestaolicitanc.model.ArquivoLicitacao;
 import br.com.novaconquista.gestaolicitanc.model.Licitacao;
+import br.com.novaconquista.gestaolicitanc.repository.ArquivoLicitacaoRepository;
 import br.com.novaconquista.gestaolicitanc.repository.LicitacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,46 +22,36 @@ public class LicitacaoController {
     @Autowired
     private LicitacaoRepository licitacaoRepository;
 
-    // 1. CARREGAR AS TABELAS: Retorna todos os pregões cadastrados
+    @Autowired
+    private ArquivoLicitacaoRepository arquivoLicitacaoRepository;
+
+    // 1. LISTAR TODOS OS PROCESSOS
     @GetMapping
-    public List<Licitacao> listarTodas() {
+    public List<Licitacao> listarLicitacoes() {
         return licitacaoRepository.findAll();
     }
 
-    // 2. FILA DE CAPTAÇÃO: Marivaldo envia os dados básicos de um novo pregão
+    // 2. CRIAR NOVO PROCESSO (Marivaldo)
     @PostMapping
-    public ResponseEntity<Licitacao> criarLicitacao(@RequestBody Licitacao novaLicitacao) {
-        // Trava de segurança: Todo pregão novo entra aguardando o seu PDF
-        novaLicitacao.setStatus("pendente_pdf");
-        novaLicitacao.setTemPdf(false);
-
-        Licitacao salva = licitacaoRepository.save(novaLicitacao);
-        return ResponseEntity.ok(salva);
+    public Licitacao criarLicitacao(@RequestBody Licitacao licitacao) {
+        return licitacaoRepository.save(licitacao);
     }
 
-    // 3. SUA CENTRAL DE COMANDO: Você altera o Status e a Data de Retorno
+    // 3. ATUALIZAR STATUS E DILIGÊNCIAS (Ramon)
     @PutMapping("/{id}/status")
-    public ResponseEntity<Licitacao> atualizarStatus(
-            @PathVariable Long id,
-            @RequestBody Licitacao dadosAtualizados) {
-
-        Optional<Licitacao> licitacaoExistente = licitacaoRepository.findById(id);
-
-        if (licitacaoExistente.isPresent()) {
-            Licitacao licitacao = licitacaoExistente.get();
-
-            // Atualiza apenas o que você modificou na sua tela
-            licitacao.setStatus(dadosAtualizados.getStatus());
-            licitacao.setDataRetorno(dadosAtualizados.getDataRetorno());
-
-            Licitacao atualizada = licitacaoRepository.save(licitacao);
-            return ResponseEntity.ok(atualizada);
+    public ResponseEntity<Licitacao> atualizarStatus(@PathVariable Long id, @RequestBody Licitacao dados) {
+        Optional<Licitacao> licitacaoOpt = licitacaoRepository.findById(id);
+        if (licitacaoOpt.isPresent()) {
+            Licitacao licitacao = licitacaoOpt.get();
+            licitacao.setStatus(dados.getStatus());
+            licitacao.setDataRetorno(dados.getDataRetorno());
+            licitacao.setDiligencia(dados.getDiligencia());
+            return ResponseEntity.ok(licitacaoRepository.save(licitacao));
         }
-
         return ResponseEntity.notFound().build();
     }
 
-    // 4. EXCLUSÃO: Remove um edital incorreto ou cancelado
+    // 4. EXCLUIR PROCESSO INTEIRO
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarLicitacao(@PathVariable Long id) {
         if (licitacaoRepository.existsById(id)) {
@@ -68,35 +61,56 @@ public class LicitacaoController {
         return ResponseEntity.notFound().build();
     }
 
-    // ROTA PARA RAMON FAZER O UPLOAD
-    @PostMapping("/{id}/upload")
-    public ResponseEntity<Void> uploadPdf(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
-        Optional<Licitacao> licitacaoExistente = licitacaoRepository.findById(id);
-        if (licitacaoExistente.isPresent()) {
+    // ==========================================
+    // GERENCIAMENTO DE MÚLTIPLOS ARQUIVOS (PDF)
+    // ==========================================
+
+    // 5. UPLOAD DE NOVO ARQUIVO NO PROCESSO
+    @PostMapping("/{id}/arquivos")
+    @Transactional
+    public ResponseEntity<Void> uploadArquivo(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        Optional<Licitacao> licitacaoOpt = licitacaoRepository.findById(id);
+        if (licitacaoOpt.isPresent()) {
             try {
-                Licitacao licitacao = licitacaoExistente.get();
-                licitacao.setArquivoPdf(file.getBytes());
-                licitacao.setNomeArquivoPdf(file.getOriginalFilename());
-                licitacao.setTemPdf(true);
-                licitacaoRepository.save(licitacao);
+                Licitacao licitacao = licitacaoOpt.get();
+
+                ArquivoLicitacao arquivo = new ArquivoLicitacao();
+                arquivo.setNomeArquivo(file.getOriginalFilename());
+                arquivo.setDados(file.getBytes());
+                arquivo.setLicitacao(licitacao);
+
+                licitacao.getArquivos().add(arquivo);
+                licitacaoRepository.save(licitacao); // O CascadeType.ALL cuida de salvar o arquivo no banco
+
                 return ResponseEntity.ok().build();
             } catch (Exception e) {
+                e.printStackTrace();
                 return ResponseEntity.internalServerError().build();
             }
         }
         return ResponseEntity.notFound().build();
     }
 
-    // ROTA PARA MARIVALDO (E RAMON) BAIXAREM O ARQUIVO
-    @GetMapping("/{id}/download")
-    public ResponseEntity<byte[]> downloadPdf(@PathVariable Long id) {
-        Optional<Licitacao> licitacaoExistente = licitacaoRepository.findById(id);
-        if (licitacaoExistente.isPresent() && licitacaoExistente.get().getArquivoPdf() != null) {
-            Licitacao licitacao = licitacaoExistente.get();
+    // 6. BAIXAR ARQUIVO ESPECÍFICO
+    @GetMapping("/arquivos/{arquivoId}/download")
+    public ResponseEntity<byte[]> downloadArquivo(@PathVariable Long arquivoId) {
+        Optional<ArquivoLicitacao> arquivoOpt = arquivoLicitacaoRepository.findById(arquivoId);
+        if (arquivoOpt.isPresent()) {
+            ArquivoLicitacao arquivo = arquivoOpt.get();
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + licitacao.getNomeArquivoPdf() + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + arquivo.getNomeArquivo() + "\"")
                     .contentType(MediaType.APPLICATION_PDF)
-                    .body(licitacao.getArquivoPdf());
+                    .body(arquivo.getDados());
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    // 7. EXCLUIR ARQUIVO ESPECÍFICO
+    @DeleteMapping("/arquivos/{arquivoId}")
+    public ResponseEntity<Void> deletarArquivo(@PathVariable Long arquivoId) {
+        if (arquivoLicitacaoRepository.existsById(arquivoId)) {
+            arquivoLicitacaoRepository.deleteById(arquivoId);
+            return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
     }
